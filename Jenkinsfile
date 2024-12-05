@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Building...'
+                sh 'docker build -t my-todo-app .'
             }
         }
         stage('Test') {
@@ -13,7 +13,11 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying...'
+                sh '''
+        docker stop my-todo-app || true
+        docker rm my-todo-app || true
+        docker run -d -p 5000:80 --name my-todo-app my-todo-app:latest
+        '''
             }
         }
     }
