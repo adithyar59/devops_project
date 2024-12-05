@@ -1,67 +1,36 @@
 pipeline {
-    agent any // Use any available agent
-
-    environment {
-        IMAGE_NAME = "my-todo-app"  // Docker image name
-        CONTAINER_NAME = "my-todo-app-container"  // Docker container name
-    }
-
+    agent any
     stages {
-        stage('Checkout') {
-            steps {
-                echo "Checking out the source code..."
-                checkout scm
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                echo "Building the Docker image..."
-                sh 'docker build -t ${IMAGE_NAME} .'
+                echo 'Building the Docker image...'
+                // Adjust command for Windows
+                sh 'docker build -t my-app-image .'
             }
         }
-
         stage('Stop and Remove Existing Container') {
             steps {
-                echo "Stopping and removing any existing containers..."
+                echo 'Stopping and removing the existing container...'
                 script {
-                    // Stop and remove the existing container if it exists
-                    sh """
-                    if [ \$(docker ps -a -q -f name=${CONTAINER_NAME}) ]; then
-                        docker stop ${CONTAINER_NAME} || true
-                        docker rm ${CONTAINER_NAME} || true
-                    fi
-                    """
+                    try {
+                        sh 'docker stop my-app-container || true'
+                        sh 'docker rm my-app-container || true'
+                    } catch (Exception e) {
+                        echo "No existing container found. Skipping removal."
+                    }
                 }
             }
         }
-
         stage('Run Docker Container') {
             steps {
-                echo "Running the Docker container..."
-                sh """
-                docker run -d --name ${CONTAINER_NAME} -p 8080:80 ${IMAGE_NAME}
-                """
-            }
-        }
-
-        stage('Post-Build Cleanup (Optional)') {
-            steps {
-                echo "Cleaning up unused Docker images and containers..."
-                sh """
-                docker image prune -f
-                docker container prune -f
-                """
+                echo 'Running the Docker container...'
+                sh 'docker run -d --name my-app-container -p 8080:80 my-app-image'
             }
         }
     }
-
     post {
-        success {
-            echo "Pipeline completed successfully!"
-        }
         failure {
-            echo "Pipeline failed. Please check the logs."
+            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }
