@@ -1,36 +1,20 @@
 pipeline {
     agent any
     stages {
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                echo 'Building the Docker image...'
-                // Adjust command for Windows
-                sh 'docker build -t my-app-image .'
+                echo 'Building...'
             }
         }
-        stage('Stop and Remove Existing Container') {
+        stage('Test') {
             steps {
-                echo 'Stopping and removing the existing container...'
-                script {
-                    try {
-                        sh 'docker stop my-app-container || true'
-                        sh 'docker rm my-app-container || true'
-                    } catch (Exception e) {
-                        echo "No existing container found. Skipping removal."
-                    }
-                }
+                echo 'Testing...'
             }
         }
-        stage('Run Docker Container') {
+        stage('Deploy') {
             steps {
-                echo 'Running the Docker container...'
-                sh 'docker run -d --name my-app-container -p 8080:80 my-app-image'
+                echo 'Deploying...'
             }
-        }
-    }
-    post {
-        failure {
-            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }
